@@ -60,8 +60,8 @@ all: main-build
 main-build: EB_final_v2.elf secondary-outputs
 
 # Tool invocations
-EB_final_v2.elf EB_final_v2.map: $(OBJS) $(USER_OBJS) C:\Keil_project\EB_final_v2\EB_final_v2\STM32F767ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "EB_final_v2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Keil_project\EB_final_v2\EB_final_v2\STM32F767ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="EB_final_v2.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+EB_final_v2.elf EB_final_v2.map: $(OBJS) $(USER_OBJS) C:\github\UGV\UGV\STM32F767ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "EB_final_v2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\github\UGV\UGV\STM32F767ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="EB_final_v2.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

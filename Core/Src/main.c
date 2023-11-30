@@ -110,12 +110,44 @@ int _write(int file, char *ptr, int len){
 	return len;
 }
 
+int flag_forward, flag_backwoard, flag_left, flag_right;
+
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
-	adc_conv_complete_flag = 1;
+
+     	  // HAL_Delay(5000);
+     	  if (adc_dma_result[0] >= 3800){
+     		  //forward
+     		  printf("forward\n");
+     		  flag_forward = 1;
+     	  }else{
+     		flag_forward = 0;
+     	  }
+     	  if (adc_dma_result[1] >= 3800){
+     		  //backward
+     		printf("backward\n");
+     		flag_backwoard =1;
+     	  }else{
+     		flag_backwoard = 0;
+     	  }
+     	  if (adc_dma_result[2] >= 3800){
+     		  //left
+     		printf("left\n");
+     		flag_left = 1;
+
+     	  }else{
+     		flag_left = 0;
+     	  }
+     	  if (adc_dma_result[3] >= 3800){
+     		  //right
+     		printf("right\n");
+     		flag_right =1;
+     	  }else{
+     		flag_right =0;
+     	  }
 }
 
-int flag_forward, flag_backwoard, flag_left, flag_right;
+
 
 
 /* USER CODE END 0 */
@@ -158,9 +190,8 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   MX_ADC1_Init();
   MX_ETH_Init();
-  /* USER CODE BEGIN 2 */
 
-  printf(" hello world\n");
+  /* USER CODE BEGIN 2 */
   // Initialize the DMA conversion
   HAL_ADC_Start_DMA(&hadc1, (uint32_t *) adc_dma_result , adc_channel_count);
 
@@ -170,43 +201,19 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-      if(adc_conv_complete_flag == 1){
+	  if(flag_backwoard == 1){
+		  // backward
+	  }
+	  if(flag_forward ==1 ){
+		  // forward
+	  }
+	  if(flag_left ==1 ){
+		  //left
+	  }
+	  if(flag_right == 1){
+		  //right
+	  }
 
-    	  printf("flag = 1");
-    	  printf("CH_1: %d, CH_2: %d, CH_3: %d, CH_4: %d\r\n", adc_dma_result[0], adc_dma_result[1], adc_dma_result[2], adc_dma_result[3]);
-	  	  //HAL_UART_Transmit(&huart3, (uint8_t *) dma_result_buffer, sizeof(dma_result_buffer), HAL_MAX_DELAY);
-	  	  adc_conv_complete_flag = 0;
-       	  HAL_Delay(500);
-       	  if (adc_dma_result[0] >= 3800){
-       		  //forward
-       		  printf("forward\n");
-       		  flag_forward = 1;
-       	  }else{
-       		flag_forward = 0;
-       	  }
-       	  if (adc_dma_result[1] >= 3800){
-       		  //backward
-       		printf("backward\n");
-       		flag_backwoard =1;
-       	  }else{
-       		flag_backwoard = 0;
-       	  }
-       	  if (adc_dma_result[2] >= 3800){
-       		  //left
-       		printf("left\n");
-       		flag_left = 1;
-
-       	  }else{
-       		flag_left = 0;
-       	  }
-       	  if (adc_dma_result[3] >= 3800){
-       		  //right
-       		printf("right\n");
-       		flag_right =1;
-       	  }else{
-       		flag_right =0;
-       	  }
-      }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
