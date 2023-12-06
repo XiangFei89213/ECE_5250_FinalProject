@@ -67,6 +67,8 @@ DMA_HandleTypeDef hdma_adc1;
 
 ETH_HandleTypeDef heth;
 
+TIM_HandleTypeDef htim1;
+
 UART_HandleTypeDef huart3;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
@@ -83,6 +85,7 @@ static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_ETH_Init(void);
+static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -112,39 +115,63 @@ int _write(int file, char *ptr, int len){
 
 int flag_forward, flag_backwoard, flag_left, flag_right;
 
-
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 
-     	  // HAL_Delay(5000);
-     	  if (adc_dma_result[0] >= 3800){
-     		  //forward
-     		  printf("forward\n");
-     		  flag_forward = 1;
-     	  }else{
-     		flag_forward = 0;
-     	  }
-     	  if (adc_dma_result[1] >= 3800){
-     		  //backward
-     		printf("backward\n");
-     		flag_backwoard =1;
-     	  }else{
-     		flag_backwoard = 0;
-     	  }
-     	  if (adc_dma_result[2] >= 3800){
-     		  //left
-     		printf("left\n");
-     		flag_left = 1;
+	  if (adc_dma_result[0] >= 3800){
+		  //forward
+		  printf("forward\n");
+		  flag_forward = 1;
+		  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1); // Motor Left Forward
+		  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, 0); // Motor Left Backward
 
-     	  }else{
-     		flag_left = 0;
-     	  }
-     	  if (adc_dma_result[3] >= 3800){
-     		  //right
-     		printf("right\n");
-     		flag_right =1;
-     	  }else{
-     		flag_right =0;
-     	  }
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, 1); // Motor Right Forward
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, 0); // Motor Right Backward
+	  }else{
+		  flag_forward = 0;
+	  }
+	  if (adc_dma_result[1] >= 3800){
+		  //backward
+		  printf("backward\n");
+		  flag_backwoard =1;
+		  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0); // Motor Left Forward
+		  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, 1); // Motor Left Backward
+
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, 0); // Motor Right Forward
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, 1); // Motor Right Backward
+	  }else{
+		  flag_backwoard = 0;
+	  }
+	  if (adc_dma_result[2] >= 3800){
+		  //left
+		  printf("left\n");
+		  flag_left = 1;
+		  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0); // Motor Left Forward
+		  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, 1); // Motor Left Backward
+
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, 1); // Motor Right Forward
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, 0); // Motor Right Backward
+	  }else{
+		  flag_left = 0;
+	  }
+	  if (adc_dma_result[3] >= 3800){
+		  //right
+		  printf("right\n");
+		  flag_right =1;
+		  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 1); // Motor Left Forward
+		  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, 0); // Motor Left Backward
+
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, 0); // Motor Right Forward
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, 1); // Motor Right Backward
+	  }else{
+		flag_right =0;
+	  }
+	  if (flag_forward + flag_backwoard + flag_left + flag_right != 1) {
+		  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, 0); // Motor Left Forward
+		  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, 0); // Motor Left Backward
+
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, 0); // Motor Right Forward
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, 0); // Motor Right Backward
+	  }
 }
 
 
@@ -190,7 +217,7 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   MX_ADC1_Init();
   MX_ETH_Init();
-
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
   // Initialize the DMA conversion
   HAL_ADC_Start_DMA(&hadc1, (uint32_t *) adc_dma_result , adc_channel_count);
@@ -201,19 +228,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(flag_backwoard == 1){
-		  // backward
-	  }
-	  if(flag_forward ==1 ){
-		  // forward
-	  }
-	  if(flag_left ==1 ){
-		  //left
-	  }
-	  if(flag_right == 1){
-		  //right
-	  }
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -408,6 +422,53 @@ static void MX_ETH_Init(void)
 }
 
 /**
+  * @brief TIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM1_Init(void)
+{
+
+  /* USER CODE BEGIN TIM1_Init 0 */
+
+  /* USER CODE END TIM1_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
+  htim1.Instance = TIM1;
+  htim1.Init.Prescaler = 900;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 1000;
+  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim1.Init.RepetitionCounter = 0;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM1_Init 2 */
+
+  /* USER CODE END TIM1_Init 2 */
+
+}
+
+/**
   * @brief USART3 Initialization Function
   * @param None
   * @retval None
@@ -509,11 +570,20 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOF_CLK_ENABLE();
+  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin|LD2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, LD1_Pin|GPIO_PIN_10|GPIO_PIN_11|LD3_Pin
+                          |LD2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
@@ -524,12 +594,28 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LD1_Pin LD3_Pin LD2_Pin */
-  GPIO_InitStruct.Pin = LD1_Pin|LD3_Pin|LD2_Pin;
+  /*Configure GPIO pins : LD1_Pin PB10 PB11 LD3_Pin
+                           LD2_Pin */
+  GPIO_InitStruct.Pin = LD1_Pin|GPIO_PIN_10|GPIO_PIN_11|LD3_Pin
+                          |LD2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PF13 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PE11 */
+  GPIO_InitStruct.Pin = GPIO_PIN_11;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : USB_PowerSwitchOn_Pin */
   GPIO_InitStruct.Pin = USB_PowerSwitchOn_Pin;
